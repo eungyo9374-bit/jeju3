@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>제주 축산물 이야기</title>
+<style>
+  * { box-sizing: border-box; }
+  :root {
+    --brown: #6b3f23;
+    --dark: #3b2314;
+    --accent: #d9482b;
+    --cream: #fff7ec;
+    --line: #ead9c3;
+  }
+  body {
+    margin: 0;
+    font-family: 'Malgun Gothic', sans-serif;
+    background: #f4ece0;
+    color: #3a2a20;
+    line-height: 1.7;
+  }
+
+  /* 전체 레이아웃: header / nav / (section+article | aside) / footer */
+  .page {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 12px;
+    display: grid;
+    gap: 12px;
+    grid-template-columns: minmax(0, 1fr) 280px;
+    grid-template-areas:
+      "header  header"
+      "nav     nav"
+      "section aside"
+      "article aside"
+      "gallery gallery"
+      "footer  footer";
+  }
+  header  { grid-area: header; }
+  nav     { grid-area: nav; }
+  section { grid-area: section; }
+  article { grid-area: article; }
+  aside   { grid-area: aside; }
+  footer  { grid-area: footer; }
+
+  .box {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 22px;
+  }
+  h2 { margin: 0 0 14px; font-size: 22px; color: var(--brown); }
+  h3 { margin: 0 0 6px; font-size: 17px; }
+  p  { margin: 0 0 10px; }
+
+  /* header */
+  header {
+    background: linear-gradient(135deg, #5a2f18, #a4532b);
+    color: #fff;
+    text-align: center;
+    border-radius: 12px;
+    padding: 44px 16px;
+  }
+  header h1 { margin: 0 0 8px; font-size: 34px; letter-spacing: 1px; }
+  header p { margin: 0; opacity: .92; }
+
+  /* nav */
+  nav {
+    background: var(--dark);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  nav ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; }
+  nav a {
+    display: block;
+    padding: 14px 22px;
+    color: #f6e7d2;
+    text-decoration: none;
+    font-weight: bold;
+  }
+  nav a:hover { background: var(--accent); color: #fff; }
+
+  /* section: 대표 축산물 */
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
+  .item {
+    background: var(--cream);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 18px;
+    transition: transform .2s, box-shadow .2s;
+  }
+  .item:hover { transform: translateY(-4px); box-shadow: 0 8px 18px rgba(80,40,10,.15); }
+  .item .icon { font-size: 40px; }
+  .item p { font-size: 14px; color: #6a5545; margin: 0; }
+  .badge {
+    display: inline-block; margin-top: 8px; padding: 2px 10px; border-radius: 999px;
+    background: var(--accent); color: #fff; font-size: 12px; font-weight: bold;
+  }
+
+  /* article: 이야기 */
+  article h3 { color: var(--accent); margin-top: 16px; }
+  article ul { margin: 6px 0 12px; padding-left: 20px; }
+  .quote {
+    margin: 16px 0 0;
+    padding: 14px 18px;
+    border-left: 5px solid var(--accent);
+    background: var(--cream);
+    border-radius: 0 10px 10px 0;
+    font-weight: bold;
+  }
+
+  /* aside */
+  aside { display: flex; flex-direction: column; gap: 12px; }
+  aside .box h2 { font-size: 18px; }
+  aside ol, aside ul { margin: 0; padding-left: 20px; }
+  aside li { margin-bottom: 6px; font-size: 14px; }
+  .hit { text-align: center; }
+  #count { font-size: 40px; font-weight: bold; color: var(--accent); }
+  button {
+    font-size: 15px; padding: 9px 22px; border: none; border-radius: 999px;
+    background: var(--accent); color: #fff; cursor: pointer;
+  }
+  button:hover { background: #b93a21; }
+
+  /* footer */
+  footer {
+    background: var(--dark);
+    color: #d9c5ad;
+    border-radius: 12px;
+    text-align: center;
+    padding: 22px 16px;
+    font-size: 14px;
+  }
+  footer p { margin: 4px 0; }
+
+  /* gallery: Pixabay 이미지 슬라이더 */
+  .gallery { grid-area: gallery; }
+  .g-form { display: flex; gap: 8px; margin-bottom: 8px; }
+  .g-form input { flex: 1; padding: 10px 12px; font-size: 15px; border: 1px solid var(--line); border-radius: 8px; }
+  #g-msg { min-height: 22px; margin: 4px 0 10px; font-size: 14px; color: #7a6555; }
+  #g-msg.err { color: #d33; }
+  .g-viewer { position: relative; background: #111; border-radius: 12px; overflow: hidden; aspect-ratio: 16 / 9; display: none; }
+  .g-viewer.on { display: block; }
+  .g-viewer img { width: 100%; height: 100%; object-fit: contain; display: block; }
+  .g-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; border-radius: 50%; padding: 0; font-size: 22px; background: rgba(0,0,0,.5); }
+  .g-nav.prev { left: 10px; } .g-nav.next { right: 10px; }
+  .g-cap { position: absolute; left: 0; right: 0; bottom: 0; padding: 8px 14px; background: linear-gradient(transparent, rgba(0,0,0,.7)); color: #fff; font-size: 13px; }
+  .g-thumbs { display: none; gap: 8px; margin-top: 10px; overflow-x: auto; padding-bottom: 6px; }
+  .g-thumbs.on { display: flex; }
+  .g-thumbs img { width: 76px; height: 56px; object-fit: cover; border-radius: 6px; border: 3px solid transparent; cursor: pointer; flex: none; opacity: .7; }
+  .g-thumbs img.active { border-color: var(--accent); opacity: 1; }
+  .g-pager { display: none; align-items: center; justify-content: center; gap: 12px; margin-top: 12px; }
+  .g-pager.on { display: flex; }
+  button:disabled { background: #d8c3b0; cursor: default; }
+
+  /* 채팅 버튼 + agent.html 팝업 */
+  #chatBtn {
+    position: fixed; right: 20px; bottom: 20px; z-index: 50;
+    padding: 14px 20px; font-size: 16px;
+    box-shadow: 0 4px 14px rgba(0,0,0,.3);
+  }
+  #chatPanel {
+    position: fixed; right: 20px; bottom: 80px; z-index: 50;
+    width: 380px; max-width: calc(100vw - 24px);
+    height: 560px; max-height: calc(100vh - 100px);
+    border-radius: 14px; overflow: hidden; background: #fff;
+    box-shadow: 0 8px 30px rgba(0,0,0,.35);
+    display: none;
+  }
+  #chatPanel.on { display: block; }
+  #chatPanel iframe { width: 100%; height: 100%; border: 0; display: block; }
+
+  /* reactive.html 로 이동하는 큰 원형 버튼 */
+  .bigCircle {
+    position: fixed; left: 20px; bottom: 20px; z-index: 50;
+    width: 110px; height: 110px; border-radius: 50%;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: radial-gradient(circle at 30% 25%, #ff9a6b, var(--accent) 70%);
+    color: #fff; text-decoration: none; font-weight: bold; font-size: 15px; line-height: 1.3;
+    text-align: center;
+    box-shadow: 0 6px 18px rgba(0,0,0,.35);
+    transition: transform .2s, box-shadow .2s;
+  }
+  .bigCircle .em { font-size: 34px; line-height: 1; }
+  .bigCircle:hover { transform: scale(1.08); box-shadow: 0 10px 24px rgba(0,0,0,.4); }
+  .bigCircle:active { transform: scale(.96); }
+
+  img, iframe { max-width: 100%; }
+  button, a { -webkit-tap-highlight-color: transparent; }
+
+  /* 태블릿: 사이드(aside)를 조금 좁게 */
+  @media (max-width: 1024px) {
+    .page { grid-template-columns: minmax(0, 1fr) 240px; }
+    header h1 { font-size: 30px; }
+  }
+
+  /* 모바일: 한 줄로 쌓기 */
+  @media (max-width: 760px) {
+    .page {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-areas: "header" "nav" "section" "article" "aside" "gallery" "footer";
+      padding: 8px;
+      gap: 10px;
+    }
+    header { padding: 30px 12px; }
+    header h1 { font-size: 24px; }
+    header p { font-size: 14px; }
+    .box { padding: 16px; }
+    h2 { font-size: 19px; }
+
+    /* 메뉴: 가로 스크롤 */
+    nav ul { flex-wrap: nowrap; justify-content: flex-start; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    nav li { flex: none; }
+    nav a { padding: 13px 16px; white-space: nowrap; }
+
+    /* 터치하기 쉬운 크기 */
+    button { min-height: 44px; }
+    .g-form input { min-height: 44px; font-size: 16px; }
+    .g-pager { flex-wrap: wrap; }
+    .g-viewer { aspect-ratio: 4 / 3; }
+    .g-nav { width: 38px; height: 38px; font-size: 20px; }
+
+    .bigCircle { left: 12px; bottom: 12px; width: 84px; height: 84px; font-size: 12px; }
+    .bigCircle .em { font-size: 26px; }
+
+    /* 채팅: 화면 거의 전체 */
+    #chatBtn { right: 12px; bottom: 12px; padding: 12px 18px; }
+    #chatPanel {
+      right: 8px; left: 8px; bottom: 68px;
+      width: auto; max-width: none;
+      height: calc(100vh - 90px); height: calc(100dvh - 90px);
+      max-height: none;
+    }
+  }
+
+  /* 작은 휴대폰 */
+  @media (max-width: 400px) {
+    header h1 { font-size: 21px; }
+    .cards { grid-template-columns: 1fr; }
+    .g-thumbs img { width: 62px; height: 46px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <h1>🐖 제주 축산물 이야기 🐎</h1>
+    <p>청정 자연에서 자란 제주의 맛, 믿고 먹는 제주 축산물을 소개합니다</p>
+  </header>
+
+  <nav>
+    <ul>
+      <li><a href="#products">대표 축산물</a></li>
+      <li><a href="#story">제주 이야기</a></li>
+      <li><a href="#tips">맛있게 즐기기</a></li>
+      <li><a href="#gallery">사진 갤러리</a></li>
+      <li><a href="#contact">문의</a></li>
+    </ul>
+  </nav>
+
+  <section id="products" class="box">
+    <h2>🥩 제주를 대표하는 축산물</h2>
+    <div class="cards">
+      <div class="item">
+        <div class="icon">🐖</div>
+        <h3>제주 흑돼지</h3>
+        <p>쫄깃한 식감과 고소한 육즙으로 제주 여행의 대표 메뉴로 사랑받습니다.</p>
+        <span class="badge">BEST</span>
+      </div>
+      <div class="item">
+        <div class="icon">🐂</div>
+        <h3>제주 한우 · 흑우</h3>
+        <p>제주의 바람과 초지에서 자란 소고기로 깊은 풍미를 자랑합니다.</p>
+        <span class="badge">PREMIUM</span>
+      </div>
+      <div class="item">
+        <div class="icon">🐎</div>
+        <h3>제주마 · 말고기</h3>
+        <p>예로부터 제주의 말 문화와 함께 이어 온 이색 향토 먹거리입니다.</p>
+        <span class="badge">SPECIAL</span>
+      </div>
+      <div class="item">
+        <div class="icon">🥚</div>
+        <h3>제주 계란 · 닭고기</h3>
+        <p>건강한 환경에서 자란 신선한 달걀과 닭고기를 식탁에 올려 보세요.</p>
+        <span class="badge">FRESH</span>
+      </div>
+    </div>
+  </section>
+
+  <article id="story" class="box">
+    <h2>🌿 청정 제주가 키운 이야기</h2>
+    <p>한라산 기슭의 드넓은 초원과 바다 바람, 깨끗한 물이 제주 축산물의 맛을 만듭니다. 제주는 오랜 세월 목축 문화를 이어 온 섬으로, 말과 소, 돼지를 기르는 일이 삶의 일부였습니다.</p>
+
+    <h3>🏞️ 자연이 주는 환경</h3>
+    <ul>
+      <li>드넓은 초지와 맑은 공기 속에서 자랍니다.</li>
+      <li>화산섬의 깨끗한 지하수를 마십니다.</li>
+      <li>사계절 뚜렷한 기후가 풍미를 더합니다.</li>
+    </ul>
+
+    <h3>🤝 정직한 사육과 유통</h3>
+    <ul>
+      <li>지역 농가가 정성껏 기르는 제주 먹거리입니다.</li>
+      <li>신선도를 지키는 유통 관리를 추구합니다.</li>
+      <li>생산부터 식탁까지 믿을 수 있는 정보를 전하고자 합니다.</li>
+    </ul>
+
+    <p class="quote">“제주의 바람과 풀이 키운 맛, 한 입에 느껴 보세요.” 🌬️</p>
+  </article>
+
+  <aside>
+    <div class="box" id="tips">
+      <h2>🍽️ 맛있게 즐기기</h2>
+      <ol>
+        <li>흑돼지는 멜젓에 찍어 구워 먹기</li>
+        <li>한우는 소금만 살짝 곁들여 풍미 느끼기</li>
+        <li>고기국수로 든든한 한 끼</li>
+        <li>말고기 육회는 신선한 곳에서 즐기기</li>
+      </ol>
+    </div>
+    <div class="box">
+      <h2>🛒 구매 팁</h2>
+      <ul>
+        <li>원산지와 등급 표시를 확인하세요.</li>
+        <li>냉장·냉동 상태를 꼭 살펴보세요.</li>
+        <li>구입 후에는 빨리 보관하세요.</li>
+      </ul>
+    </div>
+    <div class="box hit">
+      <h2>👍 응원하기</h2>
+      <div id="count">0</div>
+      <button id="btn">응원 누르기</button>
+    </div>
+  </aside>
+
+  <section id="gallery" class="box gallery">
+    <h2>📸 제주 사진 갤러리</h2>
+    <div class="g-form">
+      <input id="g-q" type="text" placeholder="검색어 (예: jeju, 흑돼지, horse)" value="jeju">
+      <button id="g-go">검색</button>
+    </div>
+    <div id="g-msg">검색어를 입력하고 검색을 누르세요. (사진 제공: Pixabay)</div>
+    <div class="g-viewer" id="g-viewer">
+      <img id="g-main" alt="">
+      <button class="g-nav prev" id="g-prev" aria-label="이전">‹</button>
+      <button class="g-nav next" id="g-next" aria-label="다음">›</button>
+      <div class="g-cap" id="g-cap"></div>
+    </div>
+    <div class="g-thumbs" id="g-thumbs"></div>
+    <div class="g-pager" id="g-pager">
+      <button id="g-pagePrev">◀ 이전 10개</button>
+      <span id="g-pageInfo"></span>
+      <button id="g-pageNext">다음 10개 ▶</button>
+    </div>
+  </section>
+
+  <footer id="contact">
+    <p>🐖 제주 축산물 이야기</p>
+    <p>이 페이지는 홍보용 예시이며, 구체적인 판매처·가격·인증 정보는 공식 자료를 확인해 주세요.</p>
+    <p>© 2026 Jeju Livestock · Made with 🤎</p>
+  </footer>
+
+</div>
+
+<a class="bigCircle" id="goReactive" href="reactive.html" aria-label="reactive.html 로 이동">
+  <span class="em">🧭</span>
+  <span>반응형<br>메뉴</span>
+</a>
+
+<button id="chatBtn">💬 채팅</button>
+<div id="chatPanel"><iframe id="chatFrame" title="제주 특산물 에이전트 채팅"></iframe></div>
+<template id="agentTpl">
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>제주 특산물 에이전트</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    background: #eef2f7;
+    font-family: 'Malgun Gothic', sans-serif;
+  }
+  .chat {
+    width: 100%;
+    max-width: 520px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    box-shadow: 0 0 20px rgba(0,0,0,.08);
+  }
+  header {
+    padding: 14px 16px;
+    background: linear-gradient(135deg, #ff9a3c, #ff6b3c);
+    color: #fff;
+    font-weight: bold;
+    font-size: 17px;
+  }
+  header small { display: block; font-weight: normal; opacity: .9; font-size: 12px; }
+
+  #log {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: #f7f9fc;
+  }
+  .msg {
+    max-width: 78%;
+    padding: 10px 14px;
+    border-radius: 16px;
+    line-height: 1.5;
+    font-size: 15px;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .msg.me { align-self: flex-end; background: #ff7a3c; color: #fff; border-bottom-right-radius: 4px; }
+  .msg.bot { align-self: flex-start; background: #fff; border: 1px solid #e3e8ef; border-bottom-left-radius: 4px; }
+
+  form { display: flex; gap: 8px; padding: 10px 12px; border-top: 1px solid #e3e8ef; }
+  input {
+    flex: 1;
+    padding: 11px 14px;
+    font-size: 15px;
+    border: 1px solid #cfd8e3;
+    border-radius: 999px;
+    outline: none;
+  }
+  input:focus { border-color: #ff7a3c; }
+  button {
+    padding: 0 20px;
+    border: none;
+    border-radius: 999px;
+    background: #ff7a3c;
+    color: #fff;
+    font-size: 15px;
+    cursor: pointer;
+  }
+  button:hover { background: #e8662a; }
+
+  .note { padding: 6px 12px 10px; text-align: center; font-size: 11px; color: #8a96a8; }
+</style>
+</head>
+<body>
+<div class="chat">
+  <header>🍊 제주 특산물 에이전트<small>제주도 특산물에 대해서 알아보는 기능</small></header>
+  <div id="log"></div>
+  <form id="form">
+    <input id="input" type="text" placeholder="메시지를 입력하세요" autocomplete="off">
+    <button type="submit">보내기</button>
+  </form>
+  <div class="note">※ 지금 답변은 미리 정해 둔 가짜 답변입니다 (데모)</div>
+</div>
+
+<script>
+  const log = document.getElementById('log');
+  const form = document.getElementById('form');
+  const input = document.getElementById('input');
+
+  // 에이전트 답변 3개를 차례로 돌려 쓴다
+  const replies = [
+    '안녕하세요, 하늘님! 🍊 저는 제주도 특산물을 알아봐 드리는 에이전트예요.\n귤, 흑돼지, 한라봉 중 어떤 게 궁금하세요?',
+    '그럼 제주 여행에서는 감귤 따기 체험을 추천드려요! 🧺\n직접 따서 맛보는 재미가 있고, 날씨 좋은 날 가면 더 좋아요.',
+    '아직 공부 중이에요! 5일차에 진짜로 알아볼게요.',
+  ];
+  let turn = 0;
+
+  function add(text, who) {
+    const el = document.createElement('div');
+    el.className = 'msg ' + who;
+    el.textContent = text;
+    log.appendChild(el);
+    log.scrollTop = log.scrollHeight;
+  }
+
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    const text = input.value.trim();
+    if (!text) return;
+    add(text, 'me');            // 내 말: 오른쪽 말풍선
+    input.value = '';
+    const reply = replies[turn % replies.length];
+    turn++;
+    setTimeout(() => add(reply, 'bot'), 1000);   // 1초 뒤 에이전트 답: 왼쪽 말풍선
+  });
+
+  input.focus();
+</script>
+</body>
+</html>
+</template>
+
+<script>
+  // 버튼을 누르면 agent.html 을 불러와 채팅 화면을 연다
+  document.getElementById('chatBtn').onclick = () => {
+    const panel = document.getElementById('chatPanel');
+    const frame = document.getElementById('chatFrame');
+    // agent.html 내용을 담은 <template> 을 채팅 창에서 실행한다 (파일 경로와 무관하게 동작)
+    if (!frame.srcdoc) frame.srcdoc = document.getElementById('agentTpl').innerHTML;
+    const open = panel.classList.toggle('on');
+    document.getElementById('chatBtn').textContent = open ? '✖ 닫기' : '💬 채팅';
+  };
+</script>
+
+<script>
+  const step = 100;   // 한 번 누를 때 증가하는 값
+  let count = 0;
+  document.getElementById('btn').addEventListener('click', () => {
+    count += step;
+    document.getElementById('count').textContent = count;
+  });
+
+  /* ---------- Pixabay 이미지 슬라이더 (10개씩) ---------- */
+  const $ = id => document.getElementById(id);
+  const PER_PAGE = 10;
+  let gPage = 1, gTotal = 0, hits = [], idx = 0, gQ = '';
+
+  async function gLoad(p) {
+    $('g-msg').className = ''; $('g-msg').textContent = '불러오는 중...';
+    try {
+      // API 키는 서버(Vercel 환경변수 PIXABAY_API_KEY)에서만 사용된다.
+      const res = await fetch(`/api/pixabay?q=${encodeURIComponent(gQ)}&page=${p}`);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || `오류가 발생했습니다. (${res.status})`);
+      if (!data.hits.length) throw new Error('검색 결과가 없습니다.');
+      gPage = p; gTotal = data.totalHits; hits = data.hits; idx = 0;
+      $('g-msg').textContent = `"${gQ}" 검색 결과 ${gTotal}장 (사진 제공: Pixabay)`;
+      gRender();
+    } catch (e) {
+      $('g-msg').className = 'err';
+      $('g-msg').textContent = e.message.includes('Failed to fetch')
+        ? '서버에 연결하지 못했습니다. Vercel에 배포했거나 vercel dev 로 실행했는지 확인하세요.' : e.message;
+    }
+  }
+
+  function gRender() {
+    const h = hits[idx];
+    ['g-viewer', 'g-thumbs', 'g-pager'].forEach(id => $(id).classList.add('on'));
+    $('g-main').src = h.largeImageURL || h.webformatURL;
+    $('g-main').alt = h.tags;
+    $('g-cap').textContent = `${idx + 1} / ${hits.length} · ${h.tags} · by ${h.user}`;
+    $('g-thumbs').innerHTML = '';
+    hits.forEach((x, i) => {
+      const t = document.createElement('img');
+      t.src = x.previewURL; t.alt = x.tags;
+      if (i === idx) t.className = 'active';
+      t.onclick = () => { idx = i; gRender(); };
+      $('g-thumbs').appendChild(t);
+    });
+    const maxPage = Math.ceil(Math.min(gTotal, 500) / PER_PAGE); // Pixabay는 검색당 최대 500개
+    $('g-pageInfo').textContent = `${gPage} / ${maxPage} 페이지`;
+    $('g-pagePrev').disabled = gPage <= 1;
+    $('g-pageNext').disabled = gPage >= maxPage;
+  }
+
+  const gSlide = d => { idx = (idx + d + hits.length) % hits.length; gRender(); };
+  $('g-go').onclick = () => {
+    gQ = $('g-q').value.trim();
+    if (!gQ) { $('g-msg').className = 'err'; $('g-msg').textContent = '검색어를 입력하세요.'; return; }
+    gLoad(1);
+  };
+  $('g-q').addEventListener('keydown', e => { if (e.key === 'Enter') $('g-go').click(); });
+  $('g-prev').onclick = () => gSlide(-1);
+  $('g-next').onclick = () => gSlide(1);
+  $('g-pagePrev').onclick = () => gLoad(gPage - 1);
+  $('g-pageNext').onclick = () => gLoad(gPage + 1);
+</script>
+</body>
+</html>
