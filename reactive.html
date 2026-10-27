@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>반응형 메뉴 데모</title>
+<style>
+  * { box-sizing: border-box; }
+  :root { --main: #3b6cff; --dark: #1f2a44; --bg: #f3f6fb; --line: #e1e7f0; }
+  body { margin: 0; font-family: 'Malgun Gothic', sans-serif; background: var(--bg); color: var(--dark); line-height: 1.6; }
+
+  /* ---------- 헤더 + 메뉴 ---------- */
+  header {
+    position: sticky; top: 0; z-index: 100;
+    background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,.08);
+  }
+  .bar {
+    max-width: 1100px; margin: 0 auto; padding: 0 16px;
+    height: 60px; display: flex; align-items: center; justify-content: space-between;
+  }
+  .logo { font-size: 20px; font-weight: bold; color: var(--main); text-decoration: none; }
+
+  nav ul { list-style: none; margin: 0; padding: 0; display: flex; gap: 4px; }
+  nav a {
+    display: block; padding: 8px 16px; border-radius: 999px;
+    color: var(--dark); text-decoration: none; font-weight: bold;
+  }
+  nav a:hover { background: #e9efff; }
+  nav a.active { background: var(--main); color: #fff; }
+
+  /* 햄버거 버튼 (PC에서는 숨김) */
+  #burger {
+    display: none; width: 44px; height: 44px; padding: 0;
+    background: none; border: none; cursor: pointer; position: relative;
+  }
+  #burger span {
+    position: absolute; left: 10px; right: 10px; height: 3px; border-radius: 2px;
+    background: var(--dark); transition: transform .25s, opacity .2s, top .25s;
+  }
+  #burger span:nth-child(1) { top: 14px; }
+  #burger span:nth-child(2) { top: 21px; }
+  #burger span:nth-child(3) { top: 28px; }
+  #burger[aria-expanded="true"] span:nth-child(1) { top: 21px; transform: rotate(45deg); }
+  #burger[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
+  #burger[aria-expanded="true"] span:nth-child(3) { top: 21px; transform: rotate(-45deg); }
+
+  /* ---------- 본문 ---------- */
+  main { max-width: 1100px; margin: 0 auto; padding: 24px 16px 40px; }
+  .panel { display: none; }
+  .panel.on { display: block; animation: fade .25s; }
+  @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  h1 { margin: 0 0 6px; font-size: 28px; }
+  .sub { margin: 0 0 20px; color: #5d6b85; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+  .card { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 20px; box-shadow: 0 3px 10px rgba(30,50,90,.06); }
+  .card .icon { font-size: 38px; }
+  .card h3 { margin: 8px 0 4px; font-size: 17px; }
+  .card p { margin: 0; font-size: 14px; color: #5d6b85; }
+  .card .price { margin-top: 8px; font-weight: bold; color: var(--main); }
+  .up { color: #e03a3a !important; } .down { color: #2a6bdc !important; }
+
+  .map {
+    height: 320px; border-radius: 14px; border: 1px solid var(--line);
+    background: repeating-linear-gradient(45deg, #dfe9f7, #dfe9f7 14px, #e9f0fb 14px, #e9f0fb 28px);
+    display: flex; align-items: center; justify-content: center; text-align: center; color: #5d6b85; font-weight: bold;
+  }
+
+  footer { text-align: center; padding: 20px 16px; font-size: 13px; color: #6a778f; }
+
+  /* ---------- 모바일: 햄버거 ---------- */
+  @media (max-width: 768px) {
+    #burger { display: block; }
+    nav {
+      position: absolute; left: 0; right: 0; top: 60px;
+      background: #fff; border-top: 1px solid var(--line);
+      box-shadow: 0 8px 16px rgba(0,0,0,.12);
+      max-height: 0; overflow: hidden; transition: max-height .3s ease;
+    }
+    nav.open { max-height: 360px; }
+    nav ul { flex-direction: column; gap: 0; padding: 8px 12px 12px; }
+    nav a { padding: 14px 16px; border-radius: 10px; }
+    h1 { font-size: 23px; }
+    .map { height: 240px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="bar">
+    <a class="logo" href="#food">🧭 라이프 가이드</a>
+    <button id="burger" aria-label="메뉴 열기" aria-expanded="false" aria-controls="menu">
+      <span></span><span></span><span></span>
+    </button>
+    <nav id="menu">
+      <ul>
+        <li><a href="#food" class="active">🍜 음식</a></li>
+        <li><a href="#furniture">🛋️ 가구</a></li>
+        <li><a href="#estate">🏠 부동산</a></li>
+        <li><a href="#stock">📈 주식</a></li>
+        <li><a href="#map">🗺️ 지도</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section id="food" class="panel on">
+    <h1>🍜 음식</h1>
+    <p class="sub">오늘 뭐 먹지? 인기 메뉴 예시입니다.</p>
+    <div class="grid">
+      <div class="card"><div class="icon">🍖</div><h3>제주 흑돼지</h3><p>쫄깃하고 고소한 구이</p><div class="price">예시 1인분 19,000원</div></div>
+      <div class="card"><div class="icon">🍜</div><h3>고기국수</h3><p>진한 돼지 육수 국수</p><div class="price">예시 9,000원</div></div>
+      <div class="card"><div class="icon">🍣</div><h3>자리돔물회</h3><p>새콤시원한 여름 별미</p><div class="price">예시 13,000원</div></div>
+      <div class="card"><div class="icon">🍊</div><h3>감귤 에이드</h3><p>상큼한 제주 음료</p><div class="price">예시 5,500원</div></div>
+    </div>
+  </section>
+
+  <section id="furniture" class="panel">
+    <h1>🛋️ 가구</h1>
+    <p class="sub">집 분위기를 바꾸는 가구 예시입니다.</p>
+    <div class="grid">
+      <div class="card"><div class="icon">🛋️</div><h3>3인용 소파</h3><p>푹신한 패브릭 소재</p><div class="price">예시 390,000원</div></div>
+      <div class="card"><div class="icon">🛏️</div><h3>퀸 침대</h3><p>튼튼한 원목 프레임</p><div class="price">예시 520,000원</div></div>
+      <div class="card"><div class="icon">🪑</div><h3>식탁 의자</h3><p>가볍고 쌓기 쉬운 디자인</p><div class="price">예시 45,000원</div></div>
+      <div class="card"><div class="icon">🗄️</div><h3>수납장</h3><p>좁은 공간 맞춤형</p><div class="price">예시 120,000원</div></div>
+    </div>
+  </section>
+
+  <section id="estate" class="panel">
+    <h1>🏠 부동산</h1>
+    <p class="sub">매물 정보 예시입니다. 실제 시세와 무관합니다.</p>
+    <div class="grid">
+      <div class="card"><div class="icon">🏢</div><h3>역세권 원룸</h3><p>전용 20㎡ · 신축</p><div class="price">월세 예시 50 / 500</div></div>
+      <div class="card"><div class="icon">🏘️</div><h3>주택가 투룸</h3><p>전용 42㎡ · 주차 가능</p><div class="price">전세 예시 1억 2천</div></div>
+      <div class="card"><div class="icon">🏡</div><h3>전원주택</h3><p>대지 150㎡ · 정원</p><div class="price">매매 예시 4억</div></div>
+      <div class="card"><div class="icon">🏬</div><h3>상가 점포</h3><p>1층 · 유동인구 많음</p><div class="price">월세 예시 150 / 3,000</div></div>
+    </div>
+  </section>
+
+  <section id="stock" class="panel">
+    <h1>📈 주식</h1>
+    <p class="sub">화면 구성용 가상 데이터이며 투자 조언이 아닙니다.</p>
+    <div class="grid">
+      <div class="card"><div class="icon">🏭</div><h3>가상전자</h3><p>종목코드 000001</p><div class="price up">▲ 71,200원 (+1.2%)</div></div>
+      <div class="card"><div class="icon">🚗</div><h3>가상자동차</h3><p>종목코드 000002</p><div class="price down">▼ 204,500원 (-0.8%)</div></div>
+      <div class="card"><div class="icon">💊</div><h3>가상바이오</h3><p>종목코드 000003</p><div class="price up">▲ 53,900원 (+3.4%)</div></div>
+      <div class="card"><div class="icon">🏦</div><h3>가상금융</h3><p>종목코드 000004</p><div class="price down">▼ 38,150원 (-0.3%)</div></div>
+    </div>
+  </section>
+
+  <section id="map" class="panel">
+    <h1>🗺️ 지도</h1>
+    <p class="sub">지도 영역 예시입니다. 실제 지도 API(카카오·네이버·구글 등)를 연결해 사용하세요.</p>
+    <div class="map">📍 여기에 지도가 표시됩니다</div>
+  </section>
+</main>
+
+<footer>© 2026 라이프 가이드 · 반응형 데모</footer>
+
+<script>
+  const burger = document.getElementById('burger');
+  const menu = document.getElementById('menu');
+  const links = [...menu.querySelectorAll('a')];
+  const panels = [...document.querySelectorAll('.panel')];
+
+  function setMenu(open) {
+    menu.classList.toggle('open', open);
+    burger.setAttribute('aria-expanded', open);
+    burger.setAttribute('aria-label', open ? '메뉴 닫기' : '메뉴 열기');
+  }
+  burger.addEventListener('click', () => setMenu(!menu.classList.contains('open')));
+
+  // 카테고리 전환
+  function show(id) {
+    if (!panels.some(p => p.id === id)) id = 'food';
+    panels.forEach(p => p.classList.toggle('on', p.id === id));
+    links.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + id));
+    scrollTo(0, 0);
+  }
+  links.forEach(a => a.addEventListener('click', e => {
+    e.preventDefault();                       // 링크 이동 대신 직접 전환 (어떤 환경에서도 동작)
+    const id = a.getAttribute('href').slice(1);
+    show(id);
+    try { history.replaceState(null, '', '#' + id); } catch (_) {}
+    setMenu(false);
+  }));
+  addEventListener('hashchange', () => show(location.hash.slice(1)));
+  if (location.hash) show(location.hash.slice(1));
+
+  // 바깥 클릭 / ESC / 화면 확대 시 닫기
+  document.addEventListener('click', e => { if (!e.target.closest('header')) setMenu(false); });
+  addEventListener('keydown', e => { if (e.key === 'Escape') setMenu(false); });
+  addEventListener('resize', () => { if (innerWidth > 768) setMenu(false); });
+</script>
+</body>
+</html>
